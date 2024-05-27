@@ -35,3 +35,51 @@ def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> Dict[str, Tenso
 
 def get_parameters(obj) -> List[Tensor]:
     return list(get_state_dict(obj).values())
+
+
+def load_state_dict(
+    model, state_dict: Dict[str, Tensor], strict=True, consume=False
+) -> None:
+    """
+    Loads a state_dict into a model.
+
+    ```python
+    class Net:
+        def __init__(self):
+        self.l1 = nn.Linear(4, 5)
+        self.l2 = nn.Linear(5, 6)
+
+    net = Net()
+    state_dict = nn.state.get_state_dict(net)
+    nn.state.load_state_dict(net, state_dict)
+    ```
+    """
+    DEBUG = -2
+    model_state_dict = get_state_dict(model)
+    if len(state_dict) >= len(model_state_dict):
+        # print("lee3")
+        # print(
+        #    "WARNING: unused weights in state_dict",
+        #    sorted(list(state_dict.keys() - model_state_dict.keys())),
+        # )
+        for k, v in model_state_dict.items():
+
+            if k not in state_dict and not strict:
+                # print("lee2")
+                if DEBUG >= 1:
+                    print(f"WARNING: not loading {k}")
+                continue
+            else:
+                v.data = state_dict[k]
+            if consume:
+                del state_dict[k]
+    return model
+
+
+def get_no_grad_params(model):
+    new_params = {}
+    state_dict = get_state_dict(model)
+    for k, v in state_dict.items():
+        new_params[k] = v.data
+
+    return new_params

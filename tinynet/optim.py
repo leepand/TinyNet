@@ -27,10 +27,10 @@ class Adam(Optimizer):
     def __init__(
         self,
         params: List[Tensor],
-        lr: float = 0.001,
+        lr: float = 3e-4,  # 0.001,
         beta1: float = 0.9,
         beta2: float = 0.999,
-        eps: float = 3e-4,  # 1e-08,
+        eps: float = 1e-08,
     ):
         super().__init__(params)
         self.lr, self.beta1, self.beta2, self.eps = lr, beta1, beta2, eps
