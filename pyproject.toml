@@ -23,5 +23,5 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/leepand/Tinygrad"
-"Bug Tracker" = "https://github.com/leepand/Tinygrad/issues"
+"Homepage" = "https://github.com/leepand/tinyNet"
+"Bug Tracker" = "https://github.com/leepand/tinyNet/issues"
