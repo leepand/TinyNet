@@ -525,3 +525,15 @@ class Tensor:
         out._backward = _backward
 
         return out
+
+    def replace(self, x: "Tensor") -> "Tensor":
+        """
+        Replace the data of this tensor with the data of another tensor. Only the shape of the tensors must match.
+        """
+        # used for replacing a Tensor with a new version of it (potentially with a different device and dtype)
+        # assert not x.requires_grad and getattr(self, "_ctx", None) is None
+        assert (
+            self.shape == x.shape
+        ), f"replace shape mismatch {self.shape} != {x.shape}"
+        self.data = x  # .data
+        return self

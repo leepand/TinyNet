@@ -1,7 +1,12 @@
 from tinynet import Tensor, draw_dot
 import tinynet.nn as nn
 from tinynet.optim import SGD, Adam
-from tinynet.state import get_parameters, load_state_dict, get_no_grad_params
+from tinynet.state import (
+    get_parameters,
+    load_state_dict,
+    get_no_grad_params,
+    get_state_dict,
+)
 
 import numpy as np
 import random
@@ -61,6 +66,7 @@ class DDQNAgent:
         last_layer="iden",
         model_db=None,
         eps=0.1,
+        update_cnt=5,
     ) -> None:
         self.n_in = n_in
         self.n_out = n_out
@@ -69,6 +75,7 @@ class DDQNAgent:
         self.last_layer = last_layer
         self.eps = eps
         self._model_db = model_db
+        self.update_cnt = update_cnt
         self.actions = [a for a in range(n_out)]
 
         (
@@ -89,7 +96,7 @@ class DDQNAgent:
             last_layer=self.last_layer,
         )
         params = get_parameters(model)
-        print(len(params), type(params))
+        # print(len(params), type(params))
         opt = Adam(params)
         opt_params = {"m": opt.m, "v": opt.v}
 
@@ -108,7 +115,7 @@ class DDQNAgent:
         if random.random() < self.eps:
             action = random.choice(valid_actions)
         else:
-            x = Tensor([x], requires_grad=True)
+            x = Tensor([x], requires_grad=True).reshape((1, self.n_in))
             _model_params = self.get_init_model(model_id=model_id)
             if _model_params is not None:
                 actor_params, critic_params, optim_params = _model_params
@@ -134,22 +141,24 @@ class DDQNAgent:
         print_cost=False,
     ):
         _model_params = self.get_init_model(model_id=model_id, mode="learn")
-        if _model_params is None:
-            model, model_params, opt, opt_params = self._int_model()
-            actor_model = model
-            critic_model = actor_model
-        else:
+        model, model_params, opt, opt_params = self._int_model()
+        actor_model = model
+        critic_model = actor_model
+
+        if _model_params is not None:
             actor_params, critic_params, opt_params, model_update_cnt = _model_params
-            actor_model = load_state_dict(self.actor_model, actor_params)
-            critic_model = load_state_dict(self.critic_model, critic_params)
+            actor_model = load_state_dict(actor_model, actor_params)
+            critic_model = load_state_dict(critic_model, critic_params)
             actor_params_with_grad = get_parameters(actor_model)
             opt = Adam(actor_params_with_grad)
             opt.m = opt_params["m"]
             opt.v = opt_params["v"]
             opt.t = model_update_cnt
 
-        state_obs = Tensor([state], requires_grad=True)
-        next_state_obs = Tensor([next_state], requires_grad=True)
+        state_obs = Tensor([state], requires_grad=True).reshape((1, self.n_in))
+        next_state_obs = Tensor([next_state], requires_grad=True).reshape(
+            (1, self.n_in)
+        )
 
         value_next = critic_model(next_state_obs)
         a = np.argmax(value_next.data[0], axis=0)
@@ -160,10 +169,19 @@ class DDQNAgent:
         loss_val = self.loss_fn(Q_old, Q_tensor)
         opt.zero_grad()
         loss_val.backward()
-        opt.step()
-        opt_params["m"] = opt.m
-        opt_params["v"] = opt.v
-        actor_params_new = get_no_grad_params(actor_model)
+        opt_params_updated = opt.step()
+        opt_params["m"] = copy.deepcopy(opt.m)
+        opt_params["v"] = copy.deepcopy(opt.v)
+        # opt_params_updated=opt.params
+
+        _actor_params_new = get_state_dict(actor_model)
+        actor_params_new = {}
+        i = 0
+        for model_key in list(_actor_params_new.keys()):
+            actor_params_new[model_key] = opt_params_updated[i]  # .data
+            i += 1
+        # print(actor_params_new,"actor_params_new")
+
         critic_params_new = get_no_grad_params(critic_model)
 
         new_model_params = {}
@@ -183,7 +201,7 @@ class DDQNAgent:
             actor_params = _model["actor"]["params"]
             critic_params = _model["critic"]["params"]
             model_update_cnt = self._model_db.get(f"{model_id}:updatecnt", 0)
-            if model_update_cnt % 10 == 0:
+            if model_update_cnt % self.update_cnt == 0:
                 critic_params = copy.deepcopy(actor_params)
             optim_params = _model["actor"]["optim"]
             if mode == "learn":

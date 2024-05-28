@@ -122,7 +122,7 @@ model = DDQNAgent(
     eps=0.001,
 )
 return_list, max_q_value_list = train_DQN(
-    model, env, num_episodes, model_id="tinynet-0"
+    model, env, num_episodes, model_id="_tinynet-0"
 )
 
 env_name = "CartPole-v1"

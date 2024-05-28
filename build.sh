@@ -13,12 +13,13 @@ if [ -d "dist" ]; then
   rm -rf dist
 fi
 
-if [ -d "robingrad.egg-info" ]; then
-  rm -rf robingrad.egg-info
+if [ -d "tinynet.egg-info" ]; then
+  rm -rf tinynet.egg-info
 fi
 
 # build the package
 python -m build
+# python setup.py build
 
 # install builded package 
 cd dist

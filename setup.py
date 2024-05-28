@@ -38,6 +38,7 @@ setup(
     license="Apache 2.0",
     url="https://github.com/leepand/TinyNet",
     platforms=["Mac", "Linux", "Windows"],
+    # package_dir={'':"tinynet"},
     packages=find_packages(),
     include_package_data=True,
     data_files=[
@@ -46,7 +47,7 @@ setup(
             [],
         )
     ],
-    entry_points=entry_points,
+    # entry_points=entry_points,
     install_requires=required,
     extras_require=extras_require,
     zip_safe=False,

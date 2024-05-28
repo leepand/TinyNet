@@ -70,7 +70,8 @@ def load_state_dict(
                     print(f"WARNING: not loading {k}")
                 continue
             else:
-                v.data = state_dict[k]
+                # v.data = state_dict[k]
+                v.replace(state_dict[k])
             if consume:
                 del state_dict[k]
     return model

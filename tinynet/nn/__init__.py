@@ -1,5 +1,6 @@
 from ..tensor import Tensor
 from .loss import MSELoss, BCELoss
+import numpy as np
 
 
 class Linear:
@@ -20,12 +21,14 @@ class Linear:
             self.weight = Tensor.normal(
                 mean, std, (out_features, in_features), requires_grad=True
             )
-
         self.bias = (
-            Tensor.normal(mean, 0, (1, out_features), requires_grad=True)
-            if bias
-            else None
-        )
+            Tensor(np.zeros((1, out_features)), requires_grad=True) if bias else None
+        )  #  # set bias 'b' to zeros
+        # self.bias = (
+        #    Tensor.normal(mean, 0, (1, out_features), requires_grad=True)
+        #    if bias
+        #    else None
+        # )
 
     def __call__(self, x: "Tensor") -> "Tensor":
         return x.linear(self.weight.T, self.bias)
