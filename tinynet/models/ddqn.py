@@ -46,13 +46,7 @@ class DDQNNet:
             x = x.sigmoid()
         else:
             raise ValueError(f"activation {self.activ} is not implemented.")
-        if self.last_layer == "iden":
-            x = self.l3(x)
-        elif self.last_layer == "sigmoid":
-            x = self.l3(x)
-            x = x.sigmoid()
-        else:
-            x = self.l3(x)
+        x = self.l3(x)
         return x
 
 
@@ -122,8 +116,10 @@ class DDQNAgent:
                 actor_model = load_state_dict(self.actor_model, actor_params)
             else:
                 actor_model = self.actor_model
-
-            action_probs = actor_model(x=x).data[0]
+            if self.last_layer == "sigmoid":
+                action_probs = actor_model(x=x).sigmoid().data[0]
+            else:
+                action_probs = actor_model(x=x).data[0]
             # print(action_probs, "action_probs")
             action_probs_dict = {a: action_probs[a] for a in valid_actions}
             action = self.argmax_rand(action_probs_dict)
@@ -159,10 +155,15 @@ class DDQNAgent:
         next_state_obs = Tensor([next_state], requires_grad=True).reshape(
             (1, self.n_in)
         )
-
-        value_next = critic_model(next_state_obs)
+        if self.last_layer == "sigmoid":
+            value_next = critic_model(next_state_obs).sigmoid()
+        else:
+            value_next = critic_model(next_state_obs)
         a = np.argmax(value_next.data[0], axis=0)
-        Q_old = actor_model(state_obs)
+        if self.last_layer == "sigmoid":
+            Q_old = actor_model(state_obs).sigmoid()
+        else:
+            Q_old = actor_model(state_obs)
         Q = copy.deepcopy(Q_old.data[0])
         Q[action] = reward + (1 - np.logical_not(done)) * 0.99 * value_next.data[0][a]
         Q_tensor = Tensor([Q], requires_grad=True).reshape((1, self.n_out))

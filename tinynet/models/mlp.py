@@ -43,13 +43,7 @@ class Net:
             x = x.sigmoid()
         else:
             raise ValueError(f"activation {self.activ} is not implemented.")
-        if self.last_layer == "iden":
-            x = self.l3(x)
-        elif self.last_layer == "sigmoid":
-            x = self.l3(x)
-            x = x.sigmoid()
-        else:
-            x = self.l3(x)
+        x = self.l3(x)
         return x
 
 
@@ -100,8 +94,10 @@ class MLP:
             actor_model = load_state_dict(self.model, actor_params)
         else:
             actor_model = self.model
-
-        result = actor_model(x).data[0]
+        if self.last_layer == "sigmoid":
+            result = actor_model(x).sigmoid().data[0]
+        else:
+            result = actor_model(x).data[0]
         return result
 
     def learn(self, x, y, model_id, print_cost=False):
@@ -120,7 +116,11 @@ class MLP:
 
         x_obs = Tensor([x], requires_grad=True).reshape((1, self.n_in))
         y_obs = Tensor([y], requires_grad=True).reshape((1, self.n_out))
-        output = actor_model(x_obs)
+        if self.last_layer == "sigmoid":
+            output = actor_model(x_obs).sigmoid()
+        else:
+            output = actor_model(x_obs)
+
         if self.loss_fn == "MSE":
             loss = nn.MSELoss()(output, y_obs)
         elif self.loss_fn == "BCE":
