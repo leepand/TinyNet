@@ -147,6 +147,7 @@ class MLP:
 
         if print_cost:
             print(loss.data)
+            return loss
 
     def get_init_model(self, model_id, mode="predict"):
         _model = self._model_db.get(model_id)
