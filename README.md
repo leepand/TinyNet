@@ -43,3 +43,5 @@ g = (e * f).mean()
 g.backward()   # find derivatives of g w.r.t all other Tensors 
 draw_dot(g)
 ```
+![o of backward()](resources/backward.jpg)
+
