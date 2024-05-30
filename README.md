@@ -32,6 +32,11 @@ TinyNet的构建旨在解释制作人工智能神经网络的所有细节，并�
 - Gradient Descent
 - Adam
 
+### Models(cache db based)
+
+- MLP
+- DDQN
+
 ## TinyNet如何运作
 张量(Tensor)在tensor.py文件中的定义本质上是一个值的数组，可以对其执行加法、减法、元素级乘法、点积乘法、激活函数等操作。每个张量都会跟踪生成它的其他张量。随着计算图通过后续操作逐步构建，调用张量的backward()方法会创建一个拓扑排序的张量列表，这些张量出现在它之前。反向遍历这个列表,可以找到最后一个张量相对于之前所有张量的导数。这是微积分中链式法则的应用,在机器学习中称为反向模式自动微分(reverse-mode automatic differentiation)或autodiff。
 
@@ -67,3 +72,9 @@ draw_dot(g)
 ```
 ![o of backward()](resources/backward.jpg)
 
+
+## 研发路线图
+
+- [x] 编写框架；
+- [x] Demo 演示；
+-[] 优化DDQN性能；
