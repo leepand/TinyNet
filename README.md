@@ -77,4 +77,4 @@ draw_dot(g)
 
 - [x] 编写框架；
 - [x] Demo 演示；
--[] 优化DDQN性能；
+- [] 优化DDQN性能；
