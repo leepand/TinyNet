@@ -203,6 +203,28 @@ class Tensor:
 
         return out
 
+    def softmax(self) -> "Tensor":
+        x = self.data
+        shifted_exp = np.exp(
+            x - np.max(x, axis=-1, keepdims=True)
+        )  # numerical stability
+        t = shifted_exp / shifted_exp.sum(axis=-1, keepdims=True)
+        out = Tensor(
+            t,
+            dtype=self.data.dtype,
+            _children=(self,),
+            _op="softmax()",
+            _origin="softmax",
+            requires_grad=self.requires_grad,
+        )
+
+        def _backward():
+            self.grad += t * (1 - t) * out.grad
+
+        out._backward = _backward
+
+        return out
+
     def tanh(self) -> "Tensor":
         x = self.data
         t = (np.exp(2 * x) - 1) / (np.exp(2 * x) + 1)

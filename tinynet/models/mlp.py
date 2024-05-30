@@ -29,7 +29,7 @@ class Net:
 
     def __call__(self, x):
         x = self.l1(x)
-        
+
         if self.activ == "relu":
             x = x.relu()
             x = self.l2(x)
